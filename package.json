@@ -1,0 +1,23 @@
+{
+  "name": "jscc18-choices",
+  "version": "0.1.0",
+  "description": "## What? Choices is a little game where you will do what you have to do a million times in a lifetime: Take choices!   Some will be easy but others won't.",
+  "main": "index.js",
+  "dependencies": {
+    "readline-sync": "^1.4.9"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LarsK93/JSCC18-Choices.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LarsK93/JSCC18-Choices/issues"
+  },
+  "homepage": "https://github.com/LarsK93/JSCC18-Choices#readme"
+}
