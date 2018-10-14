@@ -6,7 +6,7 @@ var User = class {
         this.nationality = nationality
         this.residency = residency
         
-        this.currentChoice = null
+        this.currentChoiceQuestion = null
         this.currentAnswer = null
     }
 
@@ -14,20 +14,20 @@ var User = class {
         choiceElement.addUserChose(this)
     }
 
-    skip(choice) {
-        choice.addUserSkipped(this)
+    skip(ChoiceQuestion) {
+        ChoiceQuestion.addUserSkipped(this)
     }
 
     processInput(input) {
         this.currentAnswer = input
         if(input === 'skip') {
-            this.skip(this.currentChoice)
+            this.skip(this.currentChoiceQuestion)
         }
         else if (input === '1') {
-            this.choose(this.currentChoice.element1)
+            this.choose(this.currentChoiceQuestion.element1)
         }
         else if (input === '2') {
-            this.choose(this.currentChoice.element2)
+            this.choose(this.currentChoiceQuestion.element2)
         }
         else {
             console.log('Invalid Input!')
@@ -35,7 +35,7 @@ var User = class {
     }
 }
 
-var Choice = class {
+var ChoiceQuestion = class {
     constructor(element1Value, element2Value) {
         this.element1 = new ChoiceElement(element1Value)
         this.element2 = new ChoiceElement(element2Value)
@@ -65,12 +65,13 @@ var ChoiceElement = class {
 
 var ChoiceController = class {
     constructor() {
-        this.choices = [new Choice('Beer', 'Wine'), 
-                        new Choice('Facebook', 'Twitter'),
-                        new Choice('Game of Thrones', 'Breaking Bad'),
-                        new Choice('Stay', 'Leave'),
-                        new Choice('Yes', 'No'),
-                        new Choice('Warm', 'Cold')]
+        // some example choices
+        this.choices = [new ChoiceQuestion('Beer', 'Wine'), 
+                        new ChoiceQuestion('Facebook', 'Twitter'),
+                        new ChoiceQuestion('Game of Thrones', 'Breaking Bad'),
+                        new ChoiceQuestion('Stay', 'Leave'),
+                        new ChoiceQuestion('Yes', 'No'),
+                        new ChoiceQuestion('Warm', 'Cold')]
     }
 
     push(choices) {
@@ -135,6 +136,7 @@ var ChoiceController = class {
 
 choiceController = new ChoiceController()
 
+// instanciate base of users and answers as example
 var user1 = new User(19, 'Finland', 'Berlin')
 for (var i = 0; i < 5; i++) {
     choiceController.simulateRound(user1)
@@ -176,13 +178,12 @@ for (var i = 0; i < 5; i++) {
     choiceController.simulateRound(user10)
 }
 
+// read user data and answers from console
 age = readline.questionInt('Your Age: ')
 nationality = readline.question('Your Nationality (optional): ')
 residency = readline.question('Your city of residency (optional): ')
 
 var user = new User(age, nationality, residency)
-
-console.log(user)
 
 while(true) {
     choiceController.executeRound(user)
