@@ -84,14 +84,14 @@ var ChoiceController = class {
     }
 
     executeRound(user) {
-        user.currentChoice = this.getRandomChoice()
+        user.currentChoiceQuestion = this.getRandomChoice()
         console.log(user.currentChoice.toString())
         var answer = readline.question()
         user.processInput(answer)
     }
 
     simulateRound(user) {
-        user.currentChoice = this.getRandomChoice()
+        user.currentChoiceQuestion = this.getRandomChoice()
         var randomAnswer = String(Math.floor(Math.random() * 2) + 1)
         user.processInput(randomAnswer)
     }
