@@ -55,20 +55,22 @@ module.exports = class ChoiceController {
                                         .filter(element => element.age == user.age)
                                         .filter(element => element != user)
         }
-        var sumChoicesByAge = user.currentChoiceQuestion.element1.users
-                                    .filter(element => element.age == user.age)
-                                    .filter(element => element != user).length 
-                                + user.currentChoiceQuestion.element2.users
-                                    .filter(element => element.age == user.age)
-                                    .filter(element => element != user).length 
-        var shareOfElement = choseElementByAge.length / sumChoicesByAge
-        if (sumChoicesByAge > 0) {
-            console.log('You chose', chosenElement.value + '!', shareOfElement * 100, 
-                '% of other people aged', user.age, 'decided for the same answer!',
-                '(' + sumChoicesByAge, 'participated)')
-        }
-        else {
-            console.log('No other people aged', user.age, 'answered this choice yet!')
+        if (chosenElement != null) {
+            var sumChoicesByAge = user.currentChoiceQuestion.element1.users
+                                        .filter(element => element.age == user.age)
+                                        .filter(element => element != user).length 
+                                    + user.currentChoiceQuestion.element2.users
+                                        .filter(element => element.age == user.age)
+                                        .filter(element => element != user).length 
+            var shareOfElement = choseElementByAge.length / sumChoicesByAge
+            if (sumChoicesByAge > 0) {
+                console.log('You chose', chosenElement.value + '!', shareOfElement * 100, 
+                    '% of other people aged', user.age, 'decided for the same answer!',
+                    '(' + sumChoicesByAge, 'participated)')
+            }
+            else {
+                console.log('No other people aged', user.age, 'answered this choice yet!')
+            }
         }
     }
 }
