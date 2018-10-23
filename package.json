@@ -14,8 +14,8 @@
     "type": "git",
     "url": "git+https://github.com/LarsK93/JSCC18-Choices.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Lars Kolmetz <lars.kolmetz@gmail.com>",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/LarsK93/JSCC18-Choices/issues"
   },

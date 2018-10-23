@@ -1,191 +1,123 @@
 const readline = require('readline-sync')
 
-var User = class {
-    constructor(age, nationality, residency) {
-        this.age = age
-        this.nationality = nationality
-        this.residency = residency
-        
-        this.currentChoiceQuestion = null
-        this.currentAnswer = null
-    }
+const User = require('./entities/user')
+const Location = require('./entities/location')
+const Database = require('./storage/database')
 
-    choose(choiceElement) {
-        choiceElement.addUserChose(this)
-    }
+let running = true
+const usersSavedFilePath = 'storage/savedFiles/users'
 
-    skip(ChoiceQuestion) {
-        ChoiceQuestion.addUserSkipped(this)
-    }
+const users = Database.load(usersSavedFilePath)
+let currentUser = null
 
-    processInput(input) {
-        this.currentAnswer = input
-        if(input === 'skip') {
-            this.skip(this.currentChoiceQuestion)
-        }
-        else if (input === '1') {
-            this.choose(this.currentChoiceQuestion.element1)
-        }
-        else if (input === '2') {
-            this.choose(this.currentChoiceQuestion.element2)
+while(running) {
+    const command = readline.question('Enter command: ')
+    processCommand(command)
+}
+
+function processCommand(command) {
+    if (command === 'exit') {
+        console.log('Bye!')
+        running = false
+    }
+    else if (command === 'register') {
+        if (currentUser === null) {
+            registerUser()
         }
         else {
-            console.log('Invalid Input!')
+            console.log('You are already logged in. Please logout to use this function.')
         }
+    }
+    else if (command === 'login') {
+        login()
+    }
+    else if (command === 'logout') {
+        logout()
+    }
+    else {
+        console.log('Sorry, I do not know this command!')
     }
 }
 
-var ChoiceQuestion = class {
-    constructor(element1Value, element2Value) {
-        this.element1 = new ChoiceElement(element1Value)
-        this.element2 = new ChoiceElement(element2Value)
-        this.usersSkipped = [] // users who skipped this choice
-    }
+function registerUser() {
+    const username = readUniqueUsername()
+    const firstname = readline.question('First name: ')
+    const lastname = readline.question('Last name: ')
+    const age = readline.questionInt('Age: ')
+    const gender = readline.question('Gender: ')
+    const location = getLocation()
+    const password = readline.questionNewPassword('Password: ')
+    const email = readline.questionEMail('Email: ')
+    
+    const user = new User(username, firstname, lastname, age, gender, location, password, email)
+    users.push(user)
+    currentUser = user
+    Database.save(users, usersSavedFilePath)
 
-    addUserSkipped(user) {
-        this.usersSkipped.push(user)
-    }
-
-    toString() {
-        return '\n\t' + this.element1.value + '     OR     ' + this.element2.value 
-                + '\t\tPlease type \'1\' or \'2\' or \'skip\'!'
-    }
+    console.log('Welcome', user.salutationName, ', you are now registered and already logged in! Have fun :)')
 }
 
-var ChoiceElement = class {
-    constructor(value) {
-        this.value = value
-        this.users = [] // users who chose this element
-    }
-
-    addUserChose(user) {
-        this.users.push(user)
-    }
-}
-
-var ChoiceController = class {
-    constructor() {
-        // some example choices
-        this.choices = [new ChoiceQuestion('Beer', 'Wine'), 
-                        new ChoiceQuestion('Facebook', 'Twitter'),
-                        new ChoiceQuestion('Game of Thrones', 'Breaking Bad'),
-                        new ChoiceQuestion('Stay', 'Leave'),
-                        new ChoiceQuestion('Yes', 'No'),
-                        new ChoiceQuestion('Warm', 'Cold')]
-    }
-
-    push(choices) {
-        this.choices.push(choices)
-    }
-
-    getRandomChoice() {
-        // TODO make dependent of user - give choice question only once to single user!
-        return this.choices[Math.floor(Math.random() * this.choices.length)]
-    }
-
-    executeRound(user) {
-        user.currentChoiceQuestion = this.getRandomChoice()
-        console.log(user.currentChoice.toString())
-        var answer = readline.question()
-        user.processInput(answer)
-    }
-
-    simulateRound(user) {
-        user.currentChoiceQuestion = this.getRandomChoice()
-        var randomAnswer = String(Math.floor(Math.random() * 2) + 1)
-        user.processInput(randomAnswer)
-    }
-
-    evaluateRound(user) {
-        this.evaluateByAge(user)
-        // TODO evaluate by nationality and city
-    }
-
-    evaluateByAge(user) {
-        var choseElementByAge = null
-        var chosenElement = null
-        if (user.currentAnswer == '1') {
-            chosenElement = user.currentChoice.element1
-            choseElementByAge = chosenElement.users
-                                        .filter(element => element.age == user.age)
-                                        .filter(element => element != user)
+function readUniqueUsername() {
+    let username = null
+    while (username === null) {
+        let input = readline.question('Username: ')
+        input = input.toLowerCase()
+        if (users.map(u => u.username).includes(input)) {
+            console.log('This username is already taken. Please choose another one!')
         }
-        else if (user.currentAnswer == '2') {
-            chosenElement = user.currentChoice.element2
-            choseElementByAge = chosenElement.users
-                                        .filter(element => element.age == user.age)
-                                        .filter(element => element != user)
-        }
-        var sumChoicesByAge = user.currentChoice.element1.users
-                                    .filter(element => element.age == user.age)
-                                    .filter(element => element != user).length 
-                                + user.currentChoice.element2.users
-                                    .filter(element => element.age == user.age)
-                                    .filter(element => element != user).length 
-        var shareOfElement = choseElementByAge.length / sumChoicesByAge
-        if (sumChoicesByAge > 0) {
-            console.log('You chose', chosenElement.value + '!', shareOfElement * 100, 
-                '% of other people aged', user.age, 'decided for the same answer!',
-                '(' + sumChoicesByAge, 'participated)')
+        else if (input === '') {
+            console.log('Username cannot be empty. Please choose another one!')
         }
         else {
-            console.log('No other people aged', user.age, 'answered this choice yet!')
+            username = input
+        }
+    }
+    return username
+}
+
+function getLocation() {
+    while (true) {
+        const input = readline.question('Do you want to add your location to your profile? (y/yes/n/no) ')
+        if (['y', 'yes'].includes(input)) {
+            const latitude = readline.questionFloat('Location - Latitude (y): ')
+            const longitude = readline.questionFloat('Location - Longitude (x): ')
+            const label = readline.question('Location - Label (optional): ')
+            return new Location(latitude, longitude, label)
+        }
+        else if (['n', 'no'].includes(input)) {
+            return null
+        }
+        else {
+            console.log('Please enter \'y\' or \'yes\' or \'n\' or \'no\'')
         }
     }
 }
 
-choiceController = new ChoiceController()
+function login() {
+    let error = false
 
-// instanciate base of users and answers as example
-var user1 = new User(19, 'Finland', 'Berlin')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user1)
-}
-var user2 = new User(25, 'Germany', 'Berlin')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user2)
-}
-var user3 = new User(21, 'Germany', 'Tokyo')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user3)
-}
-var user4 = new User(34, 'Japan', 'London')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user4)
-}
-var user5 = new User(58, 'Brazil', 'San Francisco')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user5)
-}
-var user6 = new User(42, 'USA', 'Rome')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user6)
-}
-var user7 = new User(24, 'Russia', 'Berlin')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user7)
-}
-var user8 = new User(25, 'Italy', 'Berlin')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user8)
-}
-var user9 = new User(36, 'Spain', 'Berlin')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user9)
-}
-var user10 = new User(14, 'France', 'Berlin')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user10)
+    const username = readline.question('Username: ')
+    const password = readline.question('Password: ', { hideEchoBack: true })
+    const existingUserList = users.filter(u => u.username === username)
+    if (existingUserList.length === 1) {
+        const existingUser = existingUserList[0]
+        if (existingUser.password === password) {
+            currentUser = existingUser
+            console.log('Welcome', currentUser.salutationName, ', you successfully logged in!')
+        }
+        else {
+            error = true
+        }
+    }
+    else {
+        error = true
+    }
+
+    if (error === true) {
+        console.error('Username and/or password invalid!')
+    }
 }
 
-// read user data and answers from console
-age = readline.questionInt('Your Age: ')
-nationality = readline.question('Your Nationality (optional): ')
-residency = readline.question('Your city of residency (optional): ')
-
-var user = new User(age, nationality, residency)
-
-while(true) {
-    choiceController.executeRound(user)
-    choiceController.evaluateRound(user)
+function logout() {
+    currentUser = null
 }
