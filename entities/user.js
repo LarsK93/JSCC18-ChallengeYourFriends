@@ -1,34 +1,60 @@
-module.exports =  class User {
-    constructor(age, nationality, residency) {
+module.exports = class User {
+    constructor(username, firstname, lastname, age, gender, location, password, email) {
+        this.username = username
+        this.firstname = firstname
+        this.lastname = lastname
         this.age = age
-        this.nationality = nationality
-        this.residency = residency
+        this.gender = gender
+        this.location = location
+        this.password = password
+        this.email = email
         
-        this.currentChoiceQuestion = null
-        this.currentAnswer = null
-    }
+        this.bookmarkedChallenges = []
+        this.friendlist = []
+        this.receivedFriendRequests = []
+        this.sentFriendRequests = []
 
-    choose(choiceElement) {
-        choiceElement.addUserChose(this)
-    }
-
-    skip(choiceQuestion) {
-        choiceQuestion.addUserSkipped(this)
-    }
-
-    processInput(input) {
-        this.currentAnswer = input
-        if(input === 'skip') {
-            this.skip(this.currentChoiceQuestion)
-        }
-        else if (input === '1') {
-            this.choose(this.currentChoiceQuestion.element1)
-        }
-        else if (input === '2') {
-            this.choose(this.currentChoiceQuestion.element2)
+        if([null, ''].includes(this.firstname)) {
+            this.salutationName = this.username
         }
         else {
-            console.log('Invalid Input!')
+            this.salutationName = this.firstname
+        }
+    }
+
+    sendFriendRequest(user) {
+        if (!this.sentFriendRequests.includes(user.username) 
+                && !this.receivedFriendRequests.includes(user.username)) {
+            this.sentFriendRequests.push(user.username)
+            user.receivedFriendRequests.push(this.username)
+        }
+        else {
+            console.error('User', this.username, 'cannot send a friend request to user', 
+                user.username, '. There is an open friend request already.')
+        }
+    }
+
+    confirmFriendRequest(user) {
+        if (this.receivedFriendRequests.includes(user.username)) {
+            this.friendlist.push(user)
+            user.friendlist.push(this)
+            this.receivedFriendRequests = this.receivedFriendRequests.filter(el => el !== user)
+            user.sentFriendRequests = user.sentFriendRequests.filter(el => el !== this)
+        }
+        else {
+            console.error('Cannot confirm friend request. User', this.username, 
+                'has not received a friend request from user', user.username + '.')
+        }
+    }
+
+    discardFriendRequest(user) {
+        if (this.receivedFriendRequests.includes(user.username)) {
+            this.receivedFriendRequests = this.receivedFriendRequests.filter(el => el !== user)
+            user.sentFriendRequests = user.sentFriendRequests.filter(el => el !== this)
+        }
+        else {
+            console.error('Cannot confirm friend request. User', this.username, 
+                'has not received a friend request from user', user.username + '.')
         }
     }
 }

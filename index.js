@@ -1,60 +1,123 @@
 const readline = require('readline-sync')
 
 const User = require('./entities/user')
-const ChoiceController = require('./entities/choicecontroller')
+const Location = require('./entities/location')
+const Database = require('./storage/database')
 
-choiceController = new ChoiceController()
+let running = true
+const usersSavedFilePath = 'storage/savedFiles/users'
 
-// instanciate base of users and answers as example
-var user1 = new User(19, 'Finland', 'Berlin')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user1)
-}
-var user2 = new User(25, 'Germany', 'Berlin')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user2)
-}
-var user3 = new User(21, 'Germany', 'Tokyo')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user3)
-}
-var user4 = new User(34, 'Japan', 'London')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user4)
-}
-var user5 = new User(58, 'Brazil', 'San Francisco')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user5)
-}
-var user6 = new User(42, 'USA', 'Rome')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user6)
-}
-var user7 = new User(24, 'Russia', 'Berlin')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user7)
-}
-var user8 = new User(25, 'Italy', 'Berlin')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user8)
-}
-var user9 = new User(36, 'Spain', 'Berlin')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user9)
-}
-var user10 = new User(14, 'France', 'Berlin')
-for (var i = 0; i < 5; i++) {
-    choiceController.simulateRound(user10)
+const users = Database.load(usersSavedFilePath)
+let currentUser = null
+
+while(running) {
+    const command = readline.question('Enter command: ')
+    processCommand(command)
 }
 
-// read user data and answers from console
-age = readline.questionInt('Your Age: ')
-nationality = readline.question('Your Nationality (optional): ')
-residency = readline.question('Your city of residency (optional): ')
+function processCommand(command) {
+    if (command === 'exit') {
+        console.log('Bye!')
+        running = false
+    }
+    else if (command === 'register') {
+        if (currentUser === null) {
+            registerUser()
+        }
+        else {
+            console.log('You are already logged in. Please logout to use this function.')
+        }
+    }
+    else if (command === 'login') {
+        login()
+    }
+    else if (command === 'logout') {
+        logout()
+    }
+    else {
+        console.log('Sorry, I do not know this command!')
+    }
+}
 
-var user = new User(age, nationality, residency)
+function registerUser() {
+    const username = readUniqueUsername()
+    const firstname = readline.question('First name: ')
+    const lastname = readline.question('Last name: ')
+    const age = readline.questionInt('Age: ')
+    const gender = readline.question('Gender: ')
+    const location = getLocation()
+    const password = readline.questionNewPassword('Password: ')
+    const email = readline.questionEMail('Email: ')
+    
+    const user = new User(username, firstname, lastname, age, gender, location, password, email)
+    users.push(user)
+    currentUser = user
+    Database.save(users, usersSavedFilePath)
 
-while(true) {
-    choiceController.executeRound(user)
-    choiceController.evaluateRound(user)
+    console.log('Welcome', user.salutationName, ', you are now registered and already logged in! Have fun :)')
+}
+
+function readUniqueUsername() {
+    let username = null
+    while (username === null) {
+        let input = readline.question('Username: ')
+        input = input.toLowerCase()
+        if (users.map(u => u.username).includes(input)) {
+            console.log('This username is already taken. Please choose another one!')
+        }
+        else if (input === '') {
+            console.log('Username cannot be empty. Please choose another one!')
+        }
+        else {
+            username = input
+        }
+    }
+    return username
+}
+
+function getLocation() {
+    while (true) {
+        const input = readline.question('Do you want to add your location to your profile? (y/yes/n/no) ')
+        if (['y', 'yes'].includes(input)) {
+            const latitude = readline.questionFloat('Location - Latitude (y): ')
+            const longitude = readline.questionFloat('Location - Longitude (x): ')
+            const label = readline.question('Location - Label (optional): ')
+            return new Location(latitude, longitude, label)
+        }
+        else if (['n', 'no'].includes(input)) {
+            return null
+        }
+        else {
+            console.log('Please enter \'y\' or \'yes\' or \'n\' or \'no\'')
+        }
+    }
+}
+
+function login() {
+    let error = false
+
+    const username = readline.question('Username: ')
+    const password = readline.question('Password: ', { hideEchoBack: true })
+    const existingUserList = users.filter(u => u.username === username)
+    if (existingUserList.length === 1) {
+        const existingUser = existingUserList[0]
+        if (existingUser.password === password) {
+            currentUser = existingUser
+            console.log('Welcome', currentUser.salutationName, ', you successfully logged in!')
+        }
+        else {
+            error = true
+        }
+    }
+    else {
+        error = true
+    }
+
+    if (error === true) {
+        console.error('Username and/or password invalid!')
+    }
+}
+
+function logout() {
+    currentUser = null
 }
