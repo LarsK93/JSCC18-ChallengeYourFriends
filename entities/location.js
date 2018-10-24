@@ -4,4 +4,8 @@ module.exports = class Location {
         this.longitude = longitude
         this.label = label
     }
+
+    static create({ latitude, longitude, label }) {
+        return new User(latitude, longitude, label)
+    }
 }

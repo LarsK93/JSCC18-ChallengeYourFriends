@@ -9,4 +9,8 @@ module.exports = class ChallengePart {
 
         this.location = location
     }
+
+    static create({ question, solution, hint1, hint2, hint3, location }) {
+        return new User(question, solution, hint1, hint2, hint3, location)
+    }
 }

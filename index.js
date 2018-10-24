@@ -9,7 +9,8 @@ let running = true
 const usersSavedFilePath = 'storage/savedFiles/users'
 const bcryptSaltRounds = 10
 
-const users = Database.load(usersSavedFilePath)
+let users = Database.load(usersSavedFilePath)
+users = users.map(el => User.create(el))
 let currentUser = null
 
 while(running) {

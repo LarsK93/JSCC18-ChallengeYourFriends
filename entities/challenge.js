@@ -4,4 +4,8 @@ module.exports = class Challenge {
         this.creator = creator
         this.rating = null
     }
+
+    static create({ partialChallenges, creator }) {
+        return new User(partialChallenges, creator)
+    }
 }

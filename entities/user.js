@@ -22,6 +22,10 @@ module.exports = class User {
         }
     }
 
+    static create({ username, firstname, lastname, age, gender, location, password, email }) {
+        return new User(username, firstname, lastname, age, gender, location, password, email)
+    }
+
     sendFriendRequest(user) {
         if (!this.sentFriendRequests.includes(user.username) 
                 && !this.receivedFriendRequests.includes(user.username)) {
