@@ -6,6 +6,6 @@ module.exports = class Location {
     }
 
     static create({ latitude, longitude, label }) {
-        return new User(latitude, longitude, label)
+        return new Location(latitude, longitude, label)
     }
 }

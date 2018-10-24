@@ -11,6 +11,6 @@ module.exports = class ChallengePart {
     }
 
     static create({ question, solution, hint1, hint2, hint3, location }) {
-        return new User(question, solution, hint1, hint2, hint3, location)
+        return new ChallengePart(question, solution, hint1, hint2, hint3, location)
     }
 }

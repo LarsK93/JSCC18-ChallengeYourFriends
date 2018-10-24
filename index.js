@@ -10,8 +10,9 @@ const usersSavedFilePath = 'storage/savedFiles/users'
 const bcryptSaltRounds = 10
 
 let users = Database.load(usersSavedFilePath)
-users = users.map(el => User.create(el))
-let currentUser = null
+users = users.map(User.create)
+
+let currentUser = users[0]
 
 while(running) {
     const command = readline.question('Enter command: ')

@@ -1,3 +1,5 @@
+const Challenge = require('./challenge')
+
 module.exports = class User {
     constructor(username, firstname, lastname, age, gender, location, password, email) {
         this.username = username
@@ -22,8 +24,14 @@ module.exports = class User {
         }
     }
 
-    static create({ username, firstname, lastname, age, gender, location, password, email }) {
-        return new User(username, firstname, lastname, age, gender, location, password, email)
+    static create({ username, firstname, lastname, age, gender, location, password, email, 
+        bookmarkedChallenges, friendlist, receivedFriendRequests, sentFriendRequests }) {
+        const user = new User(username, firstname, lastname, age, gender, location, password, email)
+        user.bookmarkedChallenges = bookmarkedChallenges.map(Challenge.create)
+        user.friendlist = friendlist.map(User.create)
+        user.receivedFriendRequests = receivedFriendRequests
+        user.sentFriendRequests = receivedFriendRequests
+        return user
     }
 
     sendFriendRequest(user) {

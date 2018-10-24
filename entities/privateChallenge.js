@@ -1,4 +1,5 @@
 const Challenge = require('./challenge')
+const User = require('./user')
 
 module.exports = class PrivateChallenge extends Challenge {
     constructor(partialChallenges, creator) {
@@ -6,8 +7,9 @@ module.exports = class PrivateChallenge extends Challenge {
         this.accessibleByUsers = [creator]
     }
 
-    static create({ partialChallenges, creator }) {
-        return new User(partialChallenges, creator)
+    static create({ partialChallenges, creator, accessibleByUsers }) {
+        const privateChallenge = new PrivateChallenge(partialChallenges, creator)
+        privateChallenge.accessibleByUsers = accessibleByUsers.map(User.create)
     }
 
     permitAccess(users) {
