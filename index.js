@@ -1,4 +1,5 @@
 const readline = require('readline-sync')
+const bcrypt = require('bcrypt')
 
 const User = require('./entities/user')
 const Location = require('./entities/location')
@@ -6,6 +7,7 @@ const Database = require('./storage/database')
 
 let running = true
 const usersSavedFilePath = 'storage/savedFiles/users'
+const bcryptSaltRounds = 10
 
 const users = Database.load(usersSavedFilePath)
 let currentUser = null
@@ -46,7 +48,7 @@ function registerUser() {
     const age = readline.questionInt('Age: ')
     const gender = readline.question('Gender: ')
     const location = getLocation()
-    const password = readline.questionNewPassword('Password: ')
+    const password = bcrypt.hashSync(readline.questionNewPassword('Password: '), bcryptSaltRounds)
     const email = readline.questionEMail('Email: ')
     
     const user = new User(username, firstname, lastname, age, gender, location, password, email)
@@ -94,30 +96,41 @@ function getLocation() {
 }
 
 function login() {
-    let error = false
+    if (currentUser === null) {
+        let error = false
 
-    const username = readline.question('Username: ')
-    const password = readline.question('Password: ', { hideEchoBack: true })
-    const existingUserList = users.filter(u => u.username === username)
-    if (existingUserList.length === 1) {
-        const existingUser = existingUserList[0]
-        if (existingUser.password === password) {
-            currentUser = existingUser
-            console.log('Welcome', currentUser.salutationName, ', you successfully logged in!')
+        const username = readline.question('Username: ')
+        const password = readline.question('Password: ', { hideEchoBack: true })
+        const existingUserList = users.filter(u => u.username === username)
+        if (existingUserList.length === 1) {
+            const existingUser = existingUserList[0]
+            if (bcrypt.compareSync(password, existingUser.password)) {
+                currentUser = existingUser
+                console.log('Welcome', currentUser.salutationName, ', you successfully logged in!')
+            }
+            else {
+                error = true
+            }
         }
         else {
             error = true
         }
+
+        if (error === true) {
+            console.error('Username and/or password invalid!')
+        }
     }
     else {
-        error = true
-    }
-
-    if (error === true) {
-        console.error('Username and/or password invalid!')
+        console.error('You are already logged in as user\'', currentUser.username, '\'')
     }
 }
 
 function logout() {
-    currentUser = null
+    if (currentUser !== null) {
+        console.log('Bye', currentUser.salutationName + '!', 'You successfully logged out!')
+        currentUser = null
+    }
+    else {
+        console.error('No user is logged in. Therefore you cannot logout. ;)')
+    }
 }

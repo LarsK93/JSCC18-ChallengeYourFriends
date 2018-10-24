@@ -4,6 +4,7 @@
   "description": "## What? Choices is a little game where you will do what you have to do a million times in a lifetime: Take choices!   Some will be easy but others won't.",
   "main": "index.js",
   "dependencies": {
+    "bcrypt": "^3.0.2",
     "readline-sync": "^1.4.9"
   },
   "devDependencies": {},
