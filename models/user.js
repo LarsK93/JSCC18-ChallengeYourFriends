@@ -30,7 +30,7 @@ module.exports = class User {
         user.bookmarkedChallenges = bookmarkedChallenges.map(Challenge.create)
         user.friendlist = friendlist.map(User.create)
         user.receivedFriendRequests = receivedFriendRequests
-        user.sentFriendRequests = receivedFriendRequests
+        user.sentFriendRequests = sentFriendRequests
         return user
     }
 
